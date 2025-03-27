@@ -78,11 +78,6 @@ def count_metrics(file_path):
 
     return vertices, edges, arcs, required_vertices, required_edges, required_arcs
 
-def calcula_densidade(NumVertices, NumEdges, NumArcs):
-    edges_max=(NumVertices*(NumVertices-1))/2
-    arcs_max=(NumVertices*(NumVertices-1))
-    densidade = (NumEdges+NumArcs)/(edges_max+arcs_max)
-    return densidade
 
 def calcula_graus(vertices, edges, arcs):
     graus = {}
@@ -104,86 +99,68 @@ def calcula_graus(vertices, edges, arcs):
     
     return graus_set
 
-def dijkstra(start_node, edges, arcs, end_node=None):
-    distancias = {start_node: 0} 
+def calcula_densidade(NumVertices, NumEdges, NumArcs):
+    edges_max=(NumVertices*(NumVertices-1))/2
+    arcs_max=(NumVertices*(NumVertices-1))
+    densidade = (NumEdges+NumArcs)/(edges_max+arcs_max)
+    return densidade
+
+def dijkstra(start_node, edges, arcs):
+    # Inicializa as distâncias e os predecessores
+    distancias = {start_node: 0}
     predecessores = {start_node: None}
-    nos_visitados = set()
-    fila_prioridade = {start_node: 0}
     
-    while fila_prioridade:
-        node = min(fila_prioridade, key=fila_prioridade.get)
-        fila_prioridade.pop(node)
-        nos_visitados.add(node)
-
-        for (u, v), (t_cost) in edges:
-            if u == node and v not in nos_visitados:
-                nova_distancia = distancias[u] + t_cost
-                if v not in distancias or nova_distancia < distancias[v]:
-                    distancias[v] = nova_distancia
-                    predecessores[v] = u
-                    fila_prioridade[v] = nova_distancia
-                    
-            if v == node and u not in nos_visitados:
-                nova_distancia = distancias[v] + t_cost
-                if u not in distancias or nova_distancia < distancias[u]:
-                    distancias[u] = nova_distancia
-                    predecessores[u] = v
-                    fila_prioridade[u] = nova_distancia
+    # Conjunto de nós não visitados
+    nos_nao_visitados = set([start_node])
+    
+    # Enquanto houver nós não visitados
+    while nos_nao_visitados:
+        # Encontra o nó com a menor distância
+        current_node = min(nos_nao_visitados, key=lambda node: distancias.get(node, float('inf')))
         
-
-        for (u, v), (t_cost) in arcs:
-            if u == node and v not in nos_visitados:
-                nova_distancia = distancias[u] + t_cost
-                if v not in distancias or nova_distancia < distancias[v]:
-                    distancias[v] = nova_distancia
-                    predecessores[v] = u
-                    fila_prioridade[v] = nova_distancia
-                    
-
-    distancias_ordenadas = {key: distancias[key] for key in sorted(distancias)}
-
-    if end_node is not None:
-        caminho = []
-        current_node = end_node
-  
-        while current_node != start_node:
-            caminho.append(current_node)
-            current_node = predecessores.get(current_node)
         
-        caminho.append(start_node)
-        caminho.reverse()
-        return distancias_ordenadas, tuple(caminho)
+        # Remove o nó da lista de nós não visitados
+        nos_nao_visitados.remove(current_node)
 
-    #talvez eu tenha que retornar tbm os predecessores, mas nao sei ainda
-    return distancias_ordenadas
+        # Verifica as arestas não direcionadas (edges)
+        for (u, v), t_cost in edges:
+            if u == current_node:
+                neighbor = v
+            elif v == current_node:
+                neighbor = u
+            else:
+                continue
+            
+            # Atualiza a distância e o predecessor
+            nova_distancia = distancias[current_node] + t_cost
+            if neighbor not in distancias or nova_distancia < distancias[neighbor]:
+                distancias[neighbor] = nova_distancia
+                predecessores[neighbor] = current_node
+                nos_nao_visitados.add(neighbor)  # Adiciona o nó vizinho à lista de não visitados
+        
+        # Verifica os arcos direcionados (arcs)
+        for (u, v), t_cost in arcs:
+            if u == current_node:
+                neighbor = v
+                nova_distancia = distancias[current_node] + t_cost
+                if neighbor not in distancias or nova_distancia < distancias[neighbor]:
+                    distancias[neighbor] = nova_distancia
+                    predecessores[neighbor] = current_node
+                    nos_nao_visitados.add(neighbor)  # Adiciona o nó vizinho à lista de não visitados
+    
+    return distancias, predecessores
 
 
 
 
-file_path = "teste.dat" 
+
+file_path = "CBMix11.dat" 
 vertices, edges, arcs, required_vertices, required_edges, required_arcs = count_metrics(file_path)
 graus = calcula_graus(vertices, edges, arcs)
-
-
-vertices_list =  list(vertices)
-excentricidade=set()
-for start_node in vertices_list:
-    geodesicas = set()
-    for last_node in vertices_list:
-        if(start_node!=last_node):
-            distancias, caminho = dijkstra(start_node, edges, arcs, last_node)
-            print(caminho)
-            geodesicas.add(len(caminho)-1)
-    excentricidade.add((start_node, max(geodesicas)))
-    
-
-# print(f" vértices: {(vertices)}")
-# print(f"Quantidade de arestas: {len(edges)}")
-# print(f"Quantidade de arcos: {len(arcs)}")
-# print(f"Quantidade de vértices requeridos: {len(required_vertices)}")
-# print(f"Quantidade de arestas requeridas: {len(required_edges)}")
-# print(f"Quantidade de arcos requeridos: {len(required_arcs)}")
-print(excentricidade)
+dist, pred = dijkstra(list(vertices)[3], edges, arcs)
+print(dist)
+print(pred)
+print(calcula_densidade(len(vertices), len(edges), len(arcs)))
 
 #TODO
 # 1. Quantidade de vértices; OK
@@ -192,8 +169,8 @@ print(excentricidade)
 # 4. Quantidade de vértices requeridos; OK
 # 5. Quantidade de arestas requeridas; OK
 # 6. Quantidade de arcos requeridos; OK
-# 7. Densidade do grafo (order strength);
-# 8. Componentes conectados;
+# 7. Densidade do grafo (order strength) OK
+# 8. Componentes conectados; OK
 # 9. Grau mínimo dos vértices; OK?
 # 10. Grau máximo dos vértices; OK?
 # 11. Intermediação - Mede a frequência com que um nó aparece nos caminhos mais curtos;
