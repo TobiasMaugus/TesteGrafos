@@ -203,7 +203,19 @@ def caminho_mais_curto_com_matriz(predecessores, start_node, end_node):
     # Retorna o caminho mais curto e a distância
     return caminho
 
-
+def calcula_diametro(dicionario):
+    maior_valor = float('-inf')  # Inicializa com o menor valor possível
+    chaves_maior_valor = None  # Para armazenar as chaves do maior valor
+    
+    # Percorre o dicionário de dicionários
+    for chave_externa, subdicionario in dicionario.items():
+        for chave_interna, valor in subdicionario.items():
+            # Atualiza o maior valor e as chaves correspondentes
+            if valor > maior_valor:
+                maior_valor = valor
+                chaves_maior_valor = (chave_externa, chave_interna)
+    
+    return maior_valor, chaves_maior_valor
 
 file_path = "teste.dat" 
 vertices, edges, arcs, required_vertices, required_edges, required_arcs = count_metrics(file_path)
@@ -216,6 +228,9 @@ caminho = caminho_mais_curto_com_matriz(matriz_predecessores_result, list(vertic
 distancia=matriz_caminhos[1][2]
 print(f"Caminho mais curto entre {list(vertices)[0]} e {list(vertices)[1]}: {caminho}")
 print(f"Distância do caminho mais curto: {distancia}")
+maior_valor, chaves_maior_valor = calcula_diametro(matriz_caminhos)
+
+print(f"O maior valor é {maior_valor}, que está nas chaves {chaves_maior_valor}")
 
 
 #TODO
@@ -231,7 +246,7 @@ print(f"Distância do caminho mais curto: {distancia}")
 # 10. Grau máximo dos vértices; OK
 # 11. Intermediação - Mede a frequência com que um nó aparece nos caminhos mais curtos;
 # 12. Caminho médio;
-# 13. Diâmetro;
+# 13. Diâmetro OK;
 #
 # Importante: Muitas dessas métricas utilizam os resultados da matriz de caminhos mais curtos de múltiplas fontes.
 # Assim, como um dos produtos da Etapa 1, é necessário desenvolver o algoritmo que gera tal matriz,
