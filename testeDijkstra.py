@@ -99,6 +99,28 @@ def calcula_graus(vertices, edges, arcs):
     
     return graus_set
 
+def imprime_graus(graus):
+    # Calcula grau minimo e maximo considerando apenas arestas
+    grau_min_arestas = min(g[1][0] for g in graus)
+    grau_max_arestas = max(g[1][0] for g in graus)
+    print(f"Grau minimo/maximo em relacao ao numero de arestas: {grau_min_arestas}/{grau_max_arestas}")
+
+    # Calcula grau de entrada minimo e maximo considerando apenas arcos
+    grau_entrada_min = min(g[1][1] for g in graus)
+    grau_entrada_max = max(g[1][1] for g in graus)
+    print(f"Grau de entrada minimo/maximo em relacao somente ao numero de arcos: {grau_entrada_min}/{grau_entrada_max}")
+
+    # Calcula grau de saida minimo e maximo considerando apenas arcos
+    grau_saida_min = min(g[1][2] for g in graus)
+    grau_saida_max = max(g[1][2] for g in graus)
+    print(f"Grau de saida minimo/maximo em relacao somente ao numero de arcos: {grau_saida_min}/{grau_saida_max}")
+
+    # Calcula grau total (arestas + entrada + saida)
+    grau_total_min = min(sum(g[1]) for g in graus)
+    grau_total_max = max(sum(g[1]) for g in graus)
+    print(f"Grau total minimo/maximo (grau em relacao a arestas + grau de entrada + grau de saida): {grau_total_min}/{grau_total_max}")
+
+
 def calcula_densidade(NumVertices, NumEdges, NumArcs):
     edges_max=(NumVertices*(NumVertices-1))/2
     arcs_max=(NumVertices*(NumVertices-1))
@@ -150,17 +172,51 @@ def dijkstra(start_node, edges, arcs):
     
     return distancias, predecessores
 
+def matriz_caminhos_mais_curto(vertices, edges, arcs):
+    matriz_distancias = {}
+
+    for v in vertices:
+        distancias, _ = dijkstra(v, edges, arcs)  # Calcula distâncias a partir de v
+        matriz_distancias[v] = {u: distancias.get(u, float('inf')) for u in vertices}  
+
+    return matriz_distancias
+
+
+def matriz_predecessores(vertices, edges, arcs):
+    matriz_predecessores = {}
+
+    for v in vertices:
+        _, predecessores = dijkstra(v, edges, arcs)  # Calcula as distâncias e predecessores a partir de v
+        matriz_predecessores[v] = {u: predecessores.get(u, None) for u in vertices}  
+
+    return matriz_predecessores
+
+def caminho_mais_curto_com_matriz(predecessores, start_node, end_node):
+    caminho = []
+    current_node = end_node
+    
+    while current_node is not None:
+        caminho.insert(0, current_node)
+        # Agora estamos acessando corretamente o predecessor diretamente da matriz de predecessores
+        current_node = predecessores[start_node].get(current_node)  # Acessando corretamente o predecessor
+    
+    # Retorna o caminho mais curto e a distância
+    return caminho
 
 
 
-
-file_path = "CBMix11.dat" 
+file_path = "teste.dat" 
 vertices, edges, arcs, required_vertices, required_edges, required_arcs = count_metrics(file_path)
 graus = calcula_graus(vertices, edges, arcs)
-dist, pred = dijkstra(list(vertices)[3], edges, arcs)
-print(dist)
-print(pred)
-print(calcula_densidade(len(vertices), len(edges), len(arcs)))
+matriz_caminhos = matriz_caminhos_mais_curto(vertices, edges, arcs)
+print(matriz_caminhos)  # Exibe a matriz de caminhos mais curtos
+matriz_predecessores_result = matriz_predecessores(vertices, edges, arcs)
+print(matriz_predecessores_result)  # Exibe a matriz de predecessores
+caminho = caminho_mais_curto_com_matriz(matriz_predecessores_result, list(vertices)[0], list(vertices)[1])
+distancia=matriz_caminhos[1][2]
+print(f"Caminho mais curto entre {list(vertices)[0]} e {list(vertices)[1]}: {caminho}")
+print(f"Distância do caminho mais curto: {distancia}")
+
 
 #TODO
 # 1. Quantidade de vértices; OK
@@ -171,8 +227,8 @@ print(calcula_densidade(len(vertices), len(edges), len(arcs)))
 # 6. Quantidade de arcos requeridos; OK
 # 7. Densidade do grafo (order strength) OK
 # 8. Componentes conectados; OK
-# 9. Grau mínimo dos vértices; OK?
-# 10. Grau máximo dos vértices; OK?
+# 9. Grau mínimo dos vértices; OK
+# 10. Grau máximo dos vértices; OK
 # 11. Intermediação - Mede a frequência com que um nó aparece nos caminhos mais curtos;
 # 12. Caminho médio;
 # 13. Diâmetro;
