@@ -149,7 +149,7 @@ def dijkstra(start_node, edges, arcs, end_node=None):
         caminho.reverse()
         return distancias_ordenadas, tuple(caminho)
 
-
+    #talvez eu tenha que retornar tbm os predecessores, mas nao sei ainda
     return distancias_ordenadas
 
 
