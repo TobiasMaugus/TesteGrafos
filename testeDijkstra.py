@@ -1,4 +1,4 @@
-def count_metrics(file_path):
+def read_file(file_path):
     with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
@@ -172,7 +172,7 @@ def dijkstra(start_node, edges, arcs):
     
     return distancias, predecessores
 
-def matriz_caminhos_mais_curto(vertices, edges, arcs):
+def matriz_menores_distancias(vertices, edges, arcs):
     matriz_distancias = {}
 
     for v in vertices:
@@ -200,7 +200,6 @@ def caminho_mais_curto_com_matriz(predecessores, start_node, end_node):
         # Agora estamos acessando corretamente o predecessor diretamente da matriz de predecessores
         current_node = predecessores[start_node].get(current_node)  # Acessando corretamente o predecessor
     
-    # Retorna o caminho mais curto e a distância
     return caminho
 
 def calcula_diametro(dicionario):
@@ -217,20 +216,35 @@ def calcula_diametro(dicionario):
     
     return maior_valor, chaves_maior_valor
 
+
+def calcula_caminho_medio(numVertices, matriz_menores_distancias):
+    soma = sum(sum(linha.values()) for linha in matriz_menores_distancias.values())
+    divisor = numVertices*(numVertices-1)
+    return soma/divisor
+
+
+def calcula_intermediacao(vertices, matriz_predecessores):
+    intermediacao = {v: 0 for v in vertices} 
+
+    for u in vertices:
+        for v in vertices:
+            if u != v:
+                caminho = caminho_mais_curto_com_matriz(matriz_predecessores, u, v)
+                if caminho:
+                    for vertice in caminho[1:-1]:  # Ignora u e v, conta apenas intermediários
+                        intermediacao[vertice] += 1
+
+    return intermediacao
+
+
 file_path = "teste.dat" 
-vertices, edges, arcs, required_vertices, required_edges, required_arcs = count_metrics(file_path)
-graus = calcula_graus(vertices, edges, arcs)
-matriz_caminhos = matriz_caminhos_mais_curto(vertices, edges, arcs)
+vertices, edges, arcs, required_vertices, required_edges, required_arcs = read_file(file_path)
+
+matriz_caminhos = matriz_menores_distancias(vertices, edges, arcs)
 print(matriz_caminhos)  # Exibe a matriz de caminhos mais curtos
 matriz_predecessores_result = matriz_predecessores(vertices, edges, arcs)
 print(matriz_predecessores_result)  # Exibe a matriz de predecessores
-caminho = caminho_mais_curto_com_matriz(matriz_predecessores_result, list(vertices)[0], list(vertices)[1])
-distancia=matriz_caminhos[1][2]
-print(f"Caminho mais curto entre {list(vertices)[0]} e {list(vertices)[1]}: {caminho}")
-print(f"Distância do caminho mais curto: {distancia}")
-maior_valor, chaves_maior_valor = calcula_diametro(matriz_caminhos)
-
-print(f"O maior valor é {maior_valor}, que está nas chaves {chaves_maior_valor}")
+print(calcula_intermediacao(vertices, matriz_predecessores_result))
 
 
 #TODO
@@ -244,8 +258,8 @@ print(f"O maior valor é {maior_valor}, que está nas chaves {chaves_maior_valor
 # 8. Componentes conectados; OK
 # 9. Grau mínimo dos vértices; OK
 # 10. Grau máximo dos vértices; OK
-# 11. Intermediação - Mede a frequência com que um nó aparece nos caminhos mais curtos;
-# 12. Caminho médio;
+# 11. Intermediação - Mede a frequência com que um nó aparece nos caminhos mais curtos OK;
+# 12. Caminho médio OK;
 # 13. Diâmetro OK;
 #
 # Importante: Muitas dessas métricas utilizam os resultados da matriz de caminhos mais curtos de múltiplas fontes.
