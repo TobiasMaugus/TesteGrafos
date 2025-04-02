@@ -202,19 +202,8 @@ def caminho_mais_curto_com_matriz(predecessores, start_node, end_node):
     
     return caminho
 
-def calcula_diametro(dicionario):
-    maior_valor = float('-inf')  # Inicializa com o menor valor possível
-    chaves_maior_valor = None  # Para armazenar as chaves do maior valor
-    
-    # Percorre o dicionário de dicionários
-    for chave_externa, subdicionario in dicionario.items():
-        for chave_interna, valor in subdicionario.items():
-            # Atualiza o maior valor e as chaves correspondentes
-            if valor > maior_valor:
-                maior_valor = valor
-                chaves_maior_valor = (chave_externa, chave_interna)
-    
-    return maior_valor, chaves_maior_valor
+def calcula_diametro(matrizDistancias):
+    return max(max(subdicionario.values()) for subdicionario in matrizDistancias.values())
 
 
 def calcula_caminho_medio(numVertices, matriz_menores_distancias):
@@ -236,15 +225,43 @@ def calcula_intermediacao(vertices, matriz_predecessores):
 
     return intermediacao
 
+def print_metricas(vertices, edges, arcs, required_vertices, required_edges, required_arcs):
+    num_vertices = len(vertices)
+    num_edges = len(edges)
+    num_arcs = len(arcs)
+    num_required_vertices = len(required_vertices)
+    num_required_edges = len(required_edges)
+    num_required_arcs = len(required_arcs)
+    
+    densidade = calcula_densidade(num_vertices, num_edges, num_arcs)
+    matriz_distancias = matriz_menores_distancias(vertices, edges, arcs)
+    matriz_pred = matriz_predecessores(vertices, edges, arcs)
+    diametro = calcula_diametro(matriz_distancias)
+    caminho_medio = calcula_caminho_medio(num_vertices, matriz_distancias)
+    intermediacao = calcula_intermediacao(vertices, matriz_pred)
+    graus = calcula_graus(vertices, edges, arcs)
+    
+    print(f"Quantidade de vértices: {num_vertices}")
+    print(f"Quantidade de arestas: {num_edges}")
+    print(f"Quantidade de arcos: {num_arcs}")
+    print(f"Quantidade de vértices requeridos: {num_required_vertices}")
+    print(f"Quantidade de arestas requeridas: {num_required_edges}")
+    print(f"Quantidade de arcos requeridos: {num_required_arcs}")
+    print(f"Densidade do grafo: {densidade:.4f}")
+    
+    imprime_graus(graus)
+    
+    print(f"Diâmetro do grafo: {diametro}")
+    print(f"Caminho médio: {caminho_medio:.4f}")
+    print("Intermediação de cada vértice:")
+    for v, inter in intermediacao.items():
+        print(f"Vértice {v}: {inter}")
+
+
 
 file_path = "teste.dat" 
 vertices, edges, arcs, required_vertices, required_edges, required_arcs = read_file(file_path)
-
-matriz_caminhos = matriz_menores_distancias(vertices, edges, arcs)
-print(matriz_caminhos)  # Exibe a matriz de caminhos mais curtos
-matriz_predecessores_result = matriz_predecessores(vertices, edges, arcs)
-print(matriz_predecessores_result)  # Exibe a matriz de predecessores
-print(calcula_intermediacao(vertices, matriz_predecessores_result))
+print_metricas(vertices, edges, arcs, required_vertices, required_edges, required_arcs)
 
 
 #TODO
